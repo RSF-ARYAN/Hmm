@@ -54,57 +54,76 @@ copy(JSON.stringify(document.cookie.split('; ').reduce((acc, cookie) => {
 5. Paste the copied JSON into the textarea on the web interface
 6. Select commands and click Submit
 
-## Vercel Deployment 🚀
+## Vercel Deployment 🌐 (Web Interface Only)
 
-### Method 1: Using Vercel CLI
+⚠️ **Important**: Vercel can only host the **web interface** for logging in. For 24/7 bot operation, use Railway or Render (see below).
 
-1. Install Vercel CLI:
-```bash
-npm install -g vercel
-```
+### What Vercel Provides:
+- ✅ Beautiful web interface for login
+- ✅ Cookie/appstate input form
+- ✅ Command selection UI
+- ❌ Does NOT run the bot 24/7 (use Railway/Render for that)
 
-2. Deploy:
-```bash
-vercel
-```
-
-3. Set Environment Variables (optional):
-```bash
-vercel env add APPSTATE
-# Paste your appstate JSON string
-```
-
-### Method 2: Using Vercel Dashboard
+### Deploy to Vercel:
 
 1. Go to [vercel.com](https://vercel.com)
 2. Click "Import Project"
 3. Import your GitHub repository
-4. Vercel will automatically detect the configuration
-5. (Optional) Add environment variable:
-   - Go to Project Settings → Environment Variables
-   - Add `APPSTATE` with your appstate JSON
+4. Vercel will automatically detect and deploy
 
-### Method 3: Deploy Button
+Your web interface will be live at `https://your-project.vercel.app`
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=YOUR_REPO_URL)
+**Note**: After you login via Vercel UI, copy your appstate JSON and deploy to Railway/Render for 24/7 operation.
 
-## Railway Deployment 🚂
+## Railway Deployment 🚂 (RECOMMENDED for 24/7 Bot)
+
+✅ **Best for**: Running the bot 24/7 with full functionality
+
+### Deploy to Railway:
 
 1. Go to [railway.app](https://railway.app)
 2. Click "New Project" → "Deploy from GitHub repo"
 3. Select your repository
 4. Railway will auto-detect and deploy
-5. (Optional) Add environment variables in Railway dashboard
+5. Your bot will start automatically!
 
-## Render Deployment 🎨
+### After Deployment:
+
+1. Open your Railway app URL (e.g., `https://your-bot.railway.app`)
+2. Login via the web interface
+3. Bot will stay online 24/7!
+
+### Optional Environment Variables:
+- `APPSTATE` - Pre-load your appstate for auto-login on restart
+- `BOT_PREFIX` - Custom command prefix
+- `ADMIN_UIDS` - Admin user IDs
+
+**Free Tier**: Railway provides $5/month free credit, enough for running the bot!
+
+## Render Deployment 🎨 (RECOMMENDED for 24/7 Bot)
+
+✅ **Best for**: Free 24/7 hosting with automatic deploys
+
+### Deploy to Render:
 
 1. Go to [render.com](https://render.com)
 2. Click "New" → "Web Service"
 3. Connect your GitHub repository
-4. Set:
-   - Build Command: `npm install`
-   - Start Command: `npm start`
+4. Settings:
+   - **Name**: your-bot-name
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Plan**: Free
 5. Click "Create Web Service"
+
+### After Deployment:
+
+1. Wait for build to complete (~2-3 minutes)
+2. Open your Render app URL (e.g., `https://your-bot.onrender.com`)
+3. Login via the web interface
+4. Bot runs 24/7 automatically!
+
+**Free Tier**: Render provides free hosting with 750 hours/month!
 
 ## Environment Variables (Optional)
 
@@ -178,14 +197,38 @@ The bot handles these events:
 
 For issues or questions, please check the console logs first. Most errors will show there with helpful messages.
 
-## Note on Vercel Limitations
+## Platform Comparison
 
-⚠️ **Important**: Vercel's serverless functions have a maximum execution time of 10 seconds on the free tier. This means:
-- The web interface works perfectly ✅
-- Login functionality works ✅
-- Bot may disconnect after 10 seconds ⚠️
+| Platform | Web Interface | 24/7 Bot | Free Tier | Best For |
+|----------|---------------|----------|-----------|----------|
+| **Railway** | ✅ | ✅ | $5/month credit | 24/7 bot hosting |
+| **Render** | ✅ | ✅ | 750 hours/month | Free 24/7 hosting |
+| **Vercel** | ✅ | ❌ | Unlimited | Web UI only |
+| **Replit** | ✅ | ✅ | Limited hours | Development & testing |
 
-**Recommendation**: Use Railway, Render, or Replit for 24/7 bot hosting, or use Vercel just for the login interface.
+### Recommended Setup:
+
+**Option 1** (Best): Deploy to **Railway** or **Render** for everything
+- One deployment handles both web UI and bot ✅
+
+**Option 2** (Advanced): Split deployment
+- **Vercel**: Web interface only (login page)
+- **Railway/Render**: Bot operation 24/7
+- User logs in on Vercel, copies appstate, sets in Railway/Render env vars
+
+## Why Vercel Can't Run the Bot 24/7
+
+Vercel uses serverless functions that:
+- Have 10-second maximum execution time
+- Cannot maintain persistent connections (like Facebook MQTT)
+- Restart between requests
+
+The bot needs:
+- Continuous connection to Facebook Messenger
+- Long-running MQTT listener
+- Persistent state management
+
+→ **Solution**: Use Railway or Render for the bot!
 
 ## License
 

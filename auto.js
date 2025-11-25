@@ -218,12 +218,16 @@ app.post('/login', async (req, res) => {
                 }
 
                 // Add dev UID, bot name and premium UID configuration logic
-                const config = JSON.parse(JSON.stringify(require('./config.json')));
+                const config = JSON.parse(JSON.stringify(global.GoatBot.config));
                 config.prefix = prefix !== 'non-prefix' ? prefix : config.prefix;
 
-                if (admin !== 'default' && !config.adminBot.includes(admin)) {
-                  config.adminBot.push(admin);
-                }
+                // Handle admin as string or array
+                const adminArray = Array.isArray(admin) ? admin : (admin && admin !== 'default' ? [admin] : []);
+                adminArray.forEach(adminId => {
+                  if (adminId && adminId.trim() !== '' && !config.adminBot.includes(adminId.trim())) {
+                    config.adminBot.push(adminId.trim());
+                  }
+                });
 
                 // Add dev UID if provided
                 if (devUid && devUid.trim() !== '') {
@@ -262,7 +266,8 @@ app.post('/login', async (req, res) => {
                         }
                 }
 
-                await accountLogin(state, commands, prefix, admin);
+                // Pass the sanitized admin array (not the original string)
+                await accountLogin(state, commands, prefix, config.adminBot);
                 res.status(200).json({
                         success: true,
                         message: 'Login successful'
@@ -336,10 +341,12 @@ async function accountLogin(state, enableCommands = [], prefix, admins = []) {
                                 global.GoatBot.botID = userid;
 
                                 // Apply HTML login settings to bot config
-                                if (prefix) {
+                                if (prefix && prefix !== 'non-prefix') {
                                         global.GoatBot.config.prefix = prefix;
                                 }
-                                if (admins && admins.length > 0) {
+                                
+                                // Only update admin list if it's a valid array with values
+                                if (Array.isArray(admins) && admins.length > 0) {
                                         global.GoatBot.config.adminBot = admins;
                                 }
 
@@ -408,7 +415,19 @@ async function autoLoadAppState() {
         if (process.env.APPSTATE) {
                 try {
                         console.log('Found APPSTATE environment variable, attempting auto-login...');
-                        const appState = JSON.parse(process.env.APPSTATE);
+                        let appState;
+                        
+                        // Try to parse as JSON (handles both array format and stringified format)
+                        try {
+                                appState = JSON.parse(process.env.APPSTATE);
+                        } catch (parseError) {
+                                // If parsing fails, try to double-parse (in case it's double-stringified)
+                                try {
+                                        appState = JSON.parse(JSON.parse(process.env.APPSTATE));
+                                } catch (e) {
+                                        throw new Error('APPSTATE environment variable is not valid JSON. Please check the format.');
+                                }
+                        }
                         
                         if (appState && Array.isArray(appState) && appState.length > 0) {
                                 const cUser = appState.find(item => item.key === 'c_user');
@@ -420,9 +439,12 @@ async function autoLoadAppState() {
                                         console.log('User already logged in.');
                                         return;
                                 }
+                        } else {
+                                throw new Error('APPSTATE must be an array of cookie objects with "key" and "value" properties.');
                         }
                 } catch (error) {
                         console.error('Auto-login from environment variable failed:', error.message);
+                        console.log('Please check your APPSTATE format. It should be a JSON array of cookies.');
                 }
         }
         
