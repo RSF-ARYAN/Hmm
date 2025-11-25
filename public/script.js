@@ -18,36 +18,6 @@ function showAds() {
   window.location.href = ads[index];
 }
 
-function measurePing() {
-  var xhr = new XMLHttpRequest();
-  var startTime, endTime;
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4) {
-      endTime = Date.now();
-      var pingTime = endTime - startTime;
-      document.getElementById("ping").textContent = pingTime + " ms";
-    }
-  };
-  xhr.open("GET", location.href + "?t=" + new Date().getTime());
-  startTime = Date.now();
-  xhr.send();
-}
-setInterval(measurePing, 1000);
-
-function updateTime() {
-  const now = new Date();
-  const options = {
-    timeZone: 'Asia/Manila',
-    hour12: true,
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric'
-  };
-  const formattedTime = now.toLocaleString('en-US', options);
-  document.getElementById('time').textContent = formattedTime;
-}
-updateTime();
-setInterval(updateTime, 1000);
 async function State() {
   const jsonInput = document.getElementById('json-data');
   const button = document.getElementById('submitButton');
