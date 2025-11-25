@@ -249,7 +249,7 @@ app.post('/login', async (req, res) => {
 
                 // Update global config instead of writing to file (Vercel compatible)
                 global.GoatBot.config = config;
-                
+
                 // Only save to file if not in Vercel environment
                 if (!process.env.VERCEL) {
                         try {
@@ -337,7 +337,7 @@ async function accountLogin(state, enableCommands = [], prefix, admins = []) {
                                 if (prefix && prefix !== 'non-prefix') {
                                         global.GoatBot.config.prefix = prefix;
                                 }
-                                
+
                                 // Only update admin list if it's a valid array with values
                                 if (Array.isArray(admins) && admins.length > 0) {
                                         global.GoatBot.config.adminBot = admins;
@@ -345,7 +345,7 @@ async function accountLogin(state, enableCommands = [], prefix, admins = []) {
 
                                 // Initialize database and load all scripts
                                 const { threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData } = await initDatabase(api);
-                                
+
                                 // Verify script directory exists
                                 const scriptDir = path.join(__dirname, 'script', 'cmds');
                                 if (!fs.existsSync(scriptDir)) {
@@ -372,7 +372,7 @@ async function accountLogin(state, enableCommands = [], prefix, admins = []) {
                                 );
 
                                 const handlerWhenListenHasError = require('./login/handlerWhenListenHasError.js');
-                                
+
                                 // Start listening to messages
                                 global.GoatBot.Listening = api.listenMqtt((err, event) => {
                                         if (err) {
@@ -416,7 +416,7 @@ async function autoLoadAppState() {
                 try {
                         console.log('Found APPSTATE environment variable, attempting auto-login...');
                         let appState;
-                        
+
                         try {
                                 appState = JSON.parse(process.env.APPSTATE);
                         } catch (parseError) {
@@ -426,7 +426,7 @@ async function autoLoadAppState() {
                                         throw new Error('APPSTATE environment variable is not valid JSON.');
                                 }
                         }
-                        
+
                         if (appState && Array.isArray(appState) && appState.length > 0) {
                                 const cUser = appState.find(item => item.key === 'c_user');
                                 if (cUser && !activeAccounts.has(cUser.value)) {
@@ -439,7 +439,7 @@ async function autoLoadAppState() {
                         console.error('Auto-login from environment variable failed:', error.message);
                 }
         }
-        
+
         // Skip appstate.json file - use HTML interface only
         console.log('╔════════════════════════════════════════════════════╗');
         console.log('║  Please login via the web interface               ║');
@@ -452,7 +452,7 @@ async function autoLoadAppState() {
 async function main() {
         console.log('Auto Bot with Goatbot Integration Started!');
         console.log('Web interface available at http://localhost:5000');
-        
+
         setTimeout(() => {
                 autoLoadAppState();
         }, 2000);
