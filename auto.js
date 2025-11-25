@@ -207,11 +207,18 @@ app.post('/login', async (req, res) => {
                         });
                 }
 
-                // Save appstate to file for auto-loading
-                fs.writeFileSync('./appstate.json', JSON.stringify(state, null, 2));
+                // Store appstate in memory (not file) for Vercel compatibility
+                // Only save to file if not in Vercel environment
+                if (!process.env.VERCEL) {
+                        try {
+                                fs.writeFileSync('./appstate.json', JSON.stringify(state, null, 2));
+                        } catch (err) {
+                                console.log('Warning: Could not save appstate.json (read-only filesystem)');
+                        }
+                }
 
                 // Add dev UID, bot name and premium UID configuration logic
-                const config = require('./config.json');
+                const config = JSON.parse(JSON.stringify(require('./config.json')));
                 config.prefix = prefix !== 'non-prefix' ? prefix : config.prefix;
 
                 if (admin !== 'default' && !config.adminBot.includes(admin)) {
@@ -243,8 +250,17 @@ app.post('/login', async (req, res) => {
                   config.nickNameBot = botName;
                 }
 
-                fs.writeFileSync('./config.json', JSON.stringify(config, null, 2));
-
+                // Update global config instead of writing to file (Vercel compatible)
+                global.GoatBot.config = config;
+                
+                // Only save to file if not in Vercel environment
+                if (!process.env.VERCEL) {
+                        try {
+                                fs.writeFileSync('./config.json', JSON.stringify(config, null, 2));
+                        } catch (err) {
+                                console.log('Warning: Could not save config.json (read-only filesystem)');
+                        }
+                }
 
                 await accountLogin(state, commands, prefix, admin);
                 res.status(200).json({
@@ -388,6 +404,29 @@ async function initDatabase(api) {
 
 // ========== AUTO LOAD APPSTATE IF EXISTS ========== //
 async function autoLoadAppState() {
+        // First try to load from environment variable (for Vercel/serverless deployment)
+        if (process.env.APPSTATE) {
+                try {
+                        console.log('Found APPSTATE environment variable, attempting auto-login...');
+                        const appState = JSON.parse(process.env.APPSTATE);
+                        
+                        if (appState && Array.isArray(appState) && appState.length > 0) {
+                                const cUser = appState.find(item => item.key === 'c_user');
+                                if (cUser && !activeAccounts.has(cUser.value)) {
+                                        await accountLogin(appState, [], null, []);
+                                        console.log('Auto-login from environment variable successful!');
+                                        return;
+                                } else if (cUser) {
+                                        console.log('User already logged in.');
+                                        return;
+                                }
+                        }
+                } catch (error) {
+                        console.error('Auto-login from environment variable failed:', error.message);
+                }
+        }
+        
+        // Fallback to file-based appstate (for local development)
         const appStatePath = path.join(__dirname, 'appstate.json');
         
         if (fs.existsSync(appStatePath)) {
@@ -409,7 +448,8 @@ async function autoLoadAppState() {
                         console.log('Please login via the web interface at http://localhost:5000');
                 }
         } else {
-                console.log('No appstate.json found. Please login via the web interface at http://localhost:5000');
+                console.log('No appstate.json or APPSTATE environment variable found.');
+                console.log('Please login via the web interface at http://localhost:5000');
         }
 }
 

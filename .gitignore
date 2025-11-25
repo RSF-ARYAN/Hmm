@@ -131,3 +131,17 @@ dist
 
 # Replit debugger
 .breakpoints
+
+# Facebook Bot Sensitive Files
+appstate.json
+account.txt
+Fca_Database/
+data/
+
+# SQLite database
+*.db
+*.sqlite
+*.sqlite3
+
+# Local configuration
+config.json.local
