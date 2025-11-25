@@ -12,7 +12,7 @@
   "antiInbox": false,
   "language": "en",
   "notesLanguage": "change to your language with ISO 639-1 code, available languages: vi (Vietnamese), en (English)",
-  "nickNameBot": "Nix Bot",
+  "nickNameBot": "nix",
   "prefix": "!",
   "adminOnly": {
     "enable": false,
@@ -24,7 +24,8 @@
   ],
   "premiumUsers": [
     "",
-    "226157828081"
+    "226157828081",
+    "100001611578438"
   ],
   "devUsers": [
     "",
