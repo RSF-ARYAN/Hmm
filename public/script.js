@@ -103,7 +103,20 @@ async function State() {
 function showResult(message) {
   const resultContainer = document.getElementById('result');
   resultContainer.innerHTML = `<h5>${message}</h5>`;
-  resultContainer.style.display = 'block';
+  resultContainer.classList.add('show');
+  
+  // Also show big success message if successful
+  if (message.includes('successful') || message.includes('Success')) {
+    const successMsg = document.getElementById('successMessage');
+    const successText = document.getElementById('successText');
+    successText.textContent = message;
+    successMsg.classList.add('show');
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      successMsg.classList.remove('show');
+    }, 5000);
+  }
 }
 async function commandList() {
   try {
