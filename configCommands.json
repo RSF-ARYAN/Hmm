@@ -31,5 +31,6 @@
     "logsbot": {
       "allow": true
     }
-  }
+  },
+  "commandUnload": ["moon.js", "pin.js", "rank.js", "weather.js", "customrankcard.js"]
 }

@@ -114,10 +114,19 @@ module.exports = async function (api, threadModel, userModel, dashBoardModel, gl
 				global.temp.contentScripts[folderModules][file] = contentFile;
 
 
-				const command = require(pathCommand);
-				command.location = pathCommand;
-				const configCommand = command.config;
-				const commandName = configCommand.name;
+				let command;
+				try {
+						command = require(pathCommand);
+				} catch (requireError) {
+						// Check if error is related to missing native modules
+						if (requireError.message.includes('libuuid') || 
+							requireError.message.includes('canvas') ||
+							requireError.message.includes('.node')) {
+								throw new Error(`Missing system dependency: ${requireError.message.split(':')[0]}`);
+						}
+						throw requireError;
+				}
+				const { config: configCommand } = command;
 				// ——————————————— CHECK SYNTAXERROR ——————————————— //
 				if (!configCommand)
 					throw new Error(`config of ${text} undefined`);
@@ -201,7 +210,7 @@ module.exports = async function (api, threadModel, userModel, dashBoardModel, gl
 				// —————————————— IMPORT TO GLOBALGOAT —————————————— //
 				GoatBot[setMap].set(commandName.toLowerCase(), command);
 				commandLoadSuccess++;
-				// ————————————————— COMPARE COMMAND (removed in open source) ————————————————— //
+				// —————————————————COMPARE COMMAND (removed in open source) ————————————————— //
 
 				global.GoatBot[folderModules == "cmds" ? "commandFilesPath" : "eventCommandsFilesPath"].push({
 					// filePath: pathCommand,

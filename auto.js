@@ -345,6 +345,13 @@ async function accountLogin(state, enableCommands = [], prefix, admins = []) {
 
                                 // Initialize database and load all scripts
                                 const { threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData } = await initDatabase(api);
+                                
+                                // Verify script directory exists
+                                const scriptDir = path.join(__dirname, 'script', 'cmds');
+                                if (!fs.existsSync(scriptDir)) {
+                                        console.log('Creating script/cmds directory...');
+                                        fs.mkdirSync(scriptDir, { recursive: true });
+                                }
 
                                 // Setup relogin function
                                 global.GoatBot.reLoginBot = function () {
