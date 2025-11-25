@@ -132,6 +132,13 @@ module.exports = {
 			const arrayFail = [];
 
 			for (const fileName of fileNeedToLoad) {
+				// Check if file exists before loading
+				const filePath = path.join(__dirname, `${fileName}.js`);
+				if (!fs.existsSync(filePath)) {
+					arrayFail.push(` ! ${fileName} => File not found: ${fileName}.js`);
+					continue;
+				}
+
 				const infoLoad = loadScripts("cmds", fileName, log, configCommands, api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData, getLang);
 				if (infoLoad.status == "success")
 					arraySucces.push(fileName);

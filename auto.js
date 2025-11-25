@@ -207,15 +207,8 @@ app.post('/login', async (req, res) => {
                         });
                 }
 
-                // Store appstate in memory (not file) for Vercel compatibility
-                // Only save to file if not in Vercel environment
-                if (!process.env.VERCEL) {
-                        try {
-                                fs.writeFileSync('./appstate.json', JSON.stringify(state, null, 2));
-                        } catch (err) {
-                                console.log('Warning: Could not save appstate.json (read-only filesystem)');
-                        }
-                }
+                // Store appstate in memory only - no file writing for multi-bot support
+                console.log('✓ Appstate stored in memory (no file created)');
 
                 // Add dev UID, bot name and premium UID configuration logic
                 const config = JSON.parse(JSON.stringify(global.GoatBot.config));
@@ -411,21 +404,19 @@ async function initDatabase(api) {
 
 // ========== AUTO LOAD APPSTATE IF EXISTS ========== //
 async function autoLoadAppState() {
-        // First try to load from environment variable (for Vercel/serverless deployment)
+        // Only use environment variable if set (for Vercel deployment)
         if (process.env.APPSTATE) {
                 try {
                         console.log('Found APPSTATE environment variable, attempting auto-login...');
                         let appState;
                         
-                        // Try to parse as JSON (handles both array format and stringified format)
                         try {
                                 appState = JSON.parse(process.env.APPSTATE);
                         } catch (parseError) {
-                                // If parsing fails, try to double-parse (in case it's double-stringified)
                                 try {
                                         appState = JSON.parse(JSON.parse(process.env.APPSTATE));
                                 } catch (e) {
-                                        throw new Error('APPSTATE environment variable is not valid JSON. Please check the format.');
+                                        throw new Error('APPSTATE environment variable is not valid JSON.');
                                 }
                         }
                         
@@ -435,44 +426,19 @@ async function autoLoadAppState() {
                                         await accountLogin(appState, [], null, []);
                                         console.log('Auto-login from environment variable successful!');
                                         return;
-                                } else if (cUser) {
-                                        console.log('User already logged in.');
-                                        return;
                                 }
-                        } else {
-                                throw new Error('APPSTATE must be an array of cookie objects with "key" and "value" properties.');
                         }
                 } catch (error) {
                         console.error('Auto-login from environment variable failed:', error.message);
-                        console.log('Please check your APPSTATE format. It should be a JSON array of cookies.');
                 }
         }
         
-        // Fallback to file-based appstate (for local development)
-        const appStatePath = path.join(__dirname, 'appstate.json');
-        
-        if (fs.existsSync(appStatePath)) {
-                try {
-                        console.log('Found existing appstate.json, attempting auto-login...');
-                        const appState = JSON.parse(fs.readFileSync(appStatePath, 'utf8'));
-                        
-                        if (appState && Array.isArray(appState) && appState.length > 0) {
-                                const cUser = appState.find(item => item.key === 'c_user');
-                                if (cUser && !activeAccounts.has(cUser.value)) {
-                                        await accountLogin(appState, [], null, []);
-                                        console.log('Auto-login successful!');
-                                } else if (cUser) {
-                                        console.log('User already logged in.');
-                                }
-                        }
-                } catch (error) {
-                        console.error('Auto-login failed:', error.message);
-                        console.log('Please login via the web interface at http://localhost:5000');
-                }
-        } else {
-                console.log('No appstate.json or APPSTATE environment variable found.');
-                console.log('Please login via the web interface at http://localhost:5000');
-        }
+        // Skip appstate.json file - use HTML interface only
+        console.log('╔════════════════════════════════════════════════════╗');
+        console.log('║  Please login via the web interface               ║');
+        console.log('║  http://localhost:5000                             ║');
+        console.log('║  You can run multiple bots by logging in again    ║');
+        console.log('╚════════════════════════════════════════════════════╝');
 }
 
 // ========== START MAIN ========== //
