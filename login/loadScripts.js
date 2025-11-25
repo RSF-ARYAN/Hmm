@@ -132,6 +132,9 @@ module.exports = async function (api, threadModel, userModel, dashBoardModel, gl
 					throw new Error(`config of ${text} undefined`);
 				if (!configCommand.category)
 					throw new Error(`category of ${text} undefined`);
+				
+				const commandName = configCommand.name;
+				
 				if (!commandName)
 					throw new Error(`name of ${text} undefined`);
 				if (!command.onStart)
